@@ -129,7 +129,7 @@ textarea { resize: vertical; min-height: 64px }
 <header>
   <div class="wrap">
     <div class="top">
-      <h1 id="title">@sua_conta <small id="subtitle">Automação e crescimento</small></h1>
+      <h1 id="title">@dravanessasuster <small id="subtitle">Automação e crescimento</small></h1>
       <div class="row">
         <span id="mode" class="pill demo">Dados de exemplo</span>
         <select id="days" aria-label="Período">
@@ -263,7 +263,7 @@ function demo() {
   ];
   return {
     demo: true,
-    account: { username: "sua_conta", token_ok: true, rate_per_hour: 180, token_expires_at: new Date(+today + 41 * 864e5).toISOString() },
+    account: { username: "dravanessasuster", token_ok: true, rate_per_hour: 180, token_expires_at: new Date(+today + 41 * 864e5).toISOString() },
     daily: days, media,
     automations: [
       { id: "a1", name: "Link da cor nova", active: true, trigger_comment: true, trigger_live: false, trigger_dm: false, keywords: ["cor"], public_replies: ["Te chamei na DM 💬"],
@@ -361,7 +361,7 @@ function growthTips(d) {
 function render() {
   const d = data; if (!d) return;
   $("#mode").hidden = !d.demo; $("#demoBanner").hidden = !d.demo;
-  $("#title").firstChild.textContent = "@" + (d.account?.username || "sua_conta") + " ";
+  $("#title").firstChild.textContent = "@" + (d.account?.username || "dravanessasuster") + " ";
   const days = Number($("#days").value), rows = (d.daily || []).slice(-days);
   const lastF = [...(d.daily || [])].reverse().find((r) => r.followers != null)?.followers;
   const gains = rows.map((r) => ({ d: r.day, v: gainOf(r) })).filter((p) => p.v != null);
