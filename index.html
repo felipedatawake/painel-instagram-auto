@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Painel Instagram Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra superior com abas, conteúdo em coluna única até 1080px; resumo antes do detalhe. */
+:root {
+  --bg: #fbf8f8; --surface: #ffffff; --sunk: #f3eeef; --line: #e6dfe1;
+  --fg: #221b1e; --muted: #6f6468; --accent: #c8325f; --accent-soft: #fbe3ea;
+  --good: #1f8a5b; --warn: #b7791f; --bad: #c0392b;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #161214; --surface: #1f1a1c; --sunk: #2a2326; --line: #3a3135;
+  --fg: #f3ecee; --muted: #a8999e; --accent: #ef6b92; --accent-soft: #3d2129;
+  --good: #4cc38a; --warn: #e0a84a; --bad: #ef6b5e; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #161214; --surface: #1f1a1c; --sunk: #2a2326; --line: #3a3135;
+  --fg: #f3ecee; --muted: #a8999e; --accent: #ef6b92; --accent-soft: #3d2129;
+  --good: #4cc38a; --warn: #e0a84a; --bad: #ef6b5e; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); font-variant-numeric: tabular-nums }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface) }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line) }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px 4px; flex-wrap: wrap }
+h1 { font: 800 1.35rem/1.1 var(--display); margin: 0; letter-spacing: -.01em }
+h1 small { display: block; font: 500 .8rem var(--body); color: var(--muted); letter-spacing: 0 }
+h2 { font: 700 1.1rem/1.2 var(--display); margin: 0; text-wrap: balance }
+h3 { font: 600 .95rem var(--body); margin: 0 }
+nav { display: flex; gap: 4px; overflow-x: auto; padding-block: 6px 8px; scrollbar-width: none }
+nav a { flex: none; padding: 6px 12px; border-radius: 999px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: .9rem }
+nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent) }
+main { padding-block: 18px 48px; display: grid; gap: 22px }
+section[hidden] { display: none }
+.view { display: grid; gap: 22px }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.between { justify-content: space-between }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden }
+.kpi { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px }
+.kpi .lbl { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
+.kpi .val { font: 800 1.6rem/1.1 var(--display) }
+.kpi .sub { font-size: .8rem; color: var(--muted) }
+.up { color: var(--good) } .down { color: var(--bad) }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; min-width: 0 }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.chart svg { width: 100%; height: auto; display: block }
+.chart text { fill: var(--muted); font: 11px var(--body) }
+.tips { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none }
+.tips li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start }
+.tips .ic { width: 28px; height: 28px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; font-family: var(--display) }
+.tips b { display: block }
+.tips span { color: var(--muted); font-size: .9rem }
+.muted { color: var(--muted) } .small { font-size: .85rem }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; background: var(--sunk); color: var(--muted) }
+.pill.on { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good) }
+.pill.on::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor }
+.pill.demo { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn) }
+button, .btn { font: 600 .9rem var(--body); border-radius: 10px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff }
+button.ghost { border-color: transparent; background: transparent; color: var(--muted); padding: 6px 10px }
+button.danger { color: var(--bad) }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+button:disabled { opacity: .5; cursor: default }
+.aut { display: grid; gap: 12px }
+.aut .head { display: flex; justify-content: space-between; gap: 10px; align-items: start; flex-wrap: wrap }
+.kw { display: flex; gap: 6px; flex-wrap: wrap }
+.kw span { font-size: .8rem; padding: 1px 8px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted) }
+.funnel { display: grid; gap: 6px }
+.fstep { display: grid; grid-template-columns: 130px 1fr 48px; gap: 10px; align-items: center; font-size: .85rem }
+.bar { height: 10px; background: var(--sunk); border-radius: 5px; overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 5px }
+.bar.alt i { background: var(--good) }
+.fstep b { text-align: right }
+.switch { position: relative; width: 42px; height: 24px; flex: none }
+.switch input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; position: absolute; z-index: 1 }
+.switch span { position: absolute; inset: 0; border-radius: 12px; background: var(--line); transition: background .15s }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s }
+.switch input:checked + span { background: var(--good) }
+.switch input:checked + span::after { transform: translateX(18px) }
+.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px }
+form { display: grid; gap: 14px }
+fieldset { border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; display: grid; gap: 12px; margin: 0 }
+legend { font: 700 .95rem var(--display); padding: 0 6px }
+label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600 }
+label .hint { font-weight: 400; color: var(--muted); font-size: .8rem }
+input[type=text], input[type=url], input[type=password], input[type=number], textarea, select { font: 400 .95rem var(--body); padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; min-width: 0 }
+textarea { resize: vertical; min-height: 64px }
+.check { display: flex; gap: 8px; align-items: center; font-weight: 500 }
+.check input { width: 18px; height: 18px; accent-color: var(--accent) }
+.mediapick { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px }
+.mediapick label { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 2px solid transparent; background: var(--sunk); cursor: pointer; max-width: 100% }
+.mediapick img { width: 100%; height: 100%; object-fit: cover }
+.mediapick input { position: absolute; opacity: 0 }
+.mediapick input:checked + img { outline: 3px solid var(--accent); outline-offset: -3px }
+.mediapick .t { position: absolute; inset: auto 0 0; font-size: .65rem; padding: 2px 4px; background: rgba(0,0,0,.55); color: #fff }
+.posts { display: grid; gap: 8px }
+.post { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); min-width: 0 }
+.post img, .post .ph { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; background: var(--sunk) }
+.post .cap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0 }
+.post .stats { display: flex; gap: 12px; flex-wrap: wrap; font-size: .82rem; color: var(--muted) }
+.post .stats b { color: var(--fg) }
+.post .er { color: var(--accent); font-weight: 700 }
+.hbars { display: grid; gap: 6px }
+.hbar { display: grid; grid-template-columns: 92px 1fr 52px; gap: 8px; align-items: center; font-size: .85rem }
+.hbar span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.hbar b { text-align: right }
+.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 600; z-index: 20; max-width: calc(100% - 32px) }
+.banner { padding: 12px 14px; border-radius: var(--r); background: color-mix(in srgb, var(--warn) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); font-size: .9rem }
+.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .85rem }
+.table { overflow-x: auto }
+.table table { border-collapse: collapse; width: 100%; font-size: .85rem }
+.table td, .table th { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap }
+@media (max-width: 480px) { .fstep { grid-template-columns: 104px 1fr 40px } .kpi .val { font-size: 1.35rem } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="wrap">
+    <div class="top">
+      <h1 id="title">@sua_conta <small id="subtitle">Automação e crescimento</small></h1>
+      <div class="row">
+        <span id="mode" class="pill demo">Dados de exemplo</span>
+        <select id="days" aria-label="Período">
+          <option value="7">7 dias</option>
+          <option value="30" selected>30 dias</option>
+          <option value="90">90 dias</option>
+        </select>
+      </div>
+    </div>
+    <nav aria-label="Seções">
+      <a href="#visao">Visão geral</a>
+      <a href="#automacoes">Automações</a>
+      <a href="#posts">Posts</a>
+      <a href="#publico">Público</a>
+      <a href="#conexao">Conexão</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-visao" class="view">
+    <div id="demoBanner" class="banner">Você está vendo dados de exemplo. Abra <a href="#conexao">Conexão</a> e informe o endereço e a chave do painel para ver a sua conta.</div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="panel chart"><div class="row between"><h2>Seguidores ganhos por dia</h2><span class="small muted" id="followTotal"></span></div><div id="chFollow"></div></div>
+      <div class="panel chart"><div class="row between"><h2>Alcance por dia</h2><span class="small muted" id="reachTotal"></span></div><div id="chReach"></div></div>
+    </div>
+    <div class="panel"><h2>O que fazer para crescer</h2><ul class="tips" id="tips"></ul></div>
+  </section>
+
+  <section id="v-automacoes" class="view" hidden>
+    <div class="row between"><h2>Automações</h2><button class="primary" id="newAut">Nova automação</button></div>
+    <div id="autList" class="view"></div>
+    <div id="autForm" class="panel" hidden></div>
+  </section>
+
+  <section id="v-posts" class="view" hidden>
+    <div class="row between">
+      <h2>Posts recentes</h2>
+      <select id="sortPosts" aria-label="Ordenar posts">
+        <option value="recent">Mais recentes</option>
+        <option value="reach">Maior alcance</option>
+        <option value="er">Maior engajamento</option>
+        <option value="follows">Mais seguidores</option>
+        <option value="saved">Mais salvos</option>
+      </select>
+    </div>
+    <div class="posts" id="postList"></div>
+  </section>
+
+  <section id="v-publico" class="view" hidden>
+    <div class="grid2" id="audience"></div>
+  </section>
+
+  <section id="v-conexao" class="view" hidden>
+    <form class="panel" id="connForm">
+      <h2>Conexão com o painel</h2>
+      <label for="fnUrl">Endereço da função<span class="hint">Termina em /functions/v1/instagram</span><input type="url" id="fnUrl" placeholder="https://xxxx.supabase.co/functions/v1/instagram" required></label>
+      <label for="panelKey">Chave do painel<input type="password" id="panelKey" autocomplete="off" required></label>
+      <div class="row"><button class="primary" type="submit">Conectar</button><button type="button" id="disconnect" class="ghost">Usar dados de exemplo</button></div>
+    </form>
+    <form class="panel" id="tokenForm">
+      <h2>Conta do Instagram</h2>
+      <p class="small muted" id="tokenInfo">Cole o token gerado no app da Meta (API do Instagram → Gerar tokens de acesso).</p>
+      <label for="igToken">Token de acesso<input type="password" id="igToken" autocomplete="off" required></label>
+      <label for="igUserId">ID da conta do Instagram<span class="hint">O número que aparece abaixo do @ no app da Meta. Só é usado com token que começa com EAA.</span><input type="text" id="igUserId" inputmode="numeric" placeholder="17841459798582674"></label>
+      <div class="row"><button class="primary" type="submit">Salvar token</button></div>
+    </form>
+    <div class="panel">
+      <div class="row between"><h2>Envios</h2><div class="row"><button id="runWorker">Processar fila</button><button id="runSync">Atualizar métricas</button></div></div>
+      <label for="rate">Limite de mensagens por hora<span class="hint">A Meta aceita cerca de 200 por hora. Deixe uma folga.</span>
+        <div class="row"><input type="number" id="rate" min="1" max="200" style="max-width:120px"><button id="saveRate" type="button">Salvar</button></div></label>
+      <div id="queue" class="small"></div>
+      <div id="errors" class="table"></div>
+    </div>
+  </section>
+</main>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const fmt = (n) => n == null || isNaN(n) ? "—" : Intl.NumberFormat("pt-BR", { notation: Math.abs(n) >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(n);
+const pct = (n) => n == null || !isFinite(n) ? "—" : (n * 100).toFixed(1).replace(".", ",") + "%";
+const store = { get(k) { try { return localStorage.getItem(k) } catch { return null } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v) } catch {} } };
+
+let cfg = { url: store.get("ig.url") || "", key: store.get("ig.key") || "" };
+let data = null;
+let editing = null;
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
+
+async function api(method, params = "", body) {
+  const r = await fetch(cfg.url.replace(/\/+$/, "") + "/panel" + params, {
+    method, headers: { "x-panel-key": cfg.key, ...(body ? { "content-type": "application/json" } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || ("Erro " + r.status));
+  return j;
+}
+async function action(body, ok) {
+  if (!cfg.url) { toast("Conecte o painel primeiro, em Conexão."); return null; }
+  try { const r = await api("POST", "", body); if (ok) toast(ok); return r; }
+  catch (e) { toast(e.message); return null; }
+}
+
+// ───── dados de exemplo (só quando o painel não está conectado) ─────
+function demo() {
+  const days = [], today = new Date();
+  let f = 4810;
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today - i * 864e5), w = d.getDay(), boost = (w === 2 || w === 4) ? 1.6 : 1;
+    const nf = Math.round((18 + 14 * Math.sin(i / 3)) * boost + (i < 8 ? 25 : 0));
+    f += nf - 6;
+    days.push({ day: d.toISOString().slice(0, 10), followers: i === 0 ? f : null, m: {
+      reach: Math.round((2300 + 900 * Math.sin(i / 4)) * boost), accounts_engaged: Math.round(310 * boost + i * 2),
+      total_interactions: Math.round(520 * boost), new_followers: nf, follows_and_unfollows__follower: nf + 6, follows_and_unfollows__non_follower: 6,
+      profile_links_taps: Math.round(40 * boost) } });
+  }
+  const mk = (id, type, cap, h, reach, likes, com, saved, shares, fol, daysAgo) => ({ id, media_product_type: type, media_type: type === "REELS" ? "VIDEO" : "IMAGE", caption: cap,
+    posted_at: new Date(today - daysAgo * 864e5).toISOString().slice(0, 11) + String(h + 3).padStart(2, "0") + ":00:00Z", like_count: likes, comments_count: com, permalink: "#",
+    insights: { reach, views: Math.round(reach * 1.7), likes, comments: com, saved, shares, follows: fol, total_interactions: likes + com + saved + shares } });
+  const media = [
+    mk("p1", "REELS", "3 erros que fazem seu filamento entupir o bico", 19, 18400, 1210, 342, 410, 220, 96, 2),
+    mk("p2", "FEED", "Tabela de temperaturas PLA, PETG e ABS — salva aí", 12, 6100, 380, 41, 520, 60, 21, 4),
+    mk("p3", "REELS", "Antes e depois: calibração de mesa em 2 minutos", 20, 9800, 640, 88, 150, 95, 44, 7),
+    mk("p4", "FEED", "Chegou cor nova! Comenta COR que eu te mando o link", 18, 7300, 520, 610, 70, 30, 58, 9),
+    mk("p5", "FEED", "Bastidores da expedição de hoje", 10, 2900, 190, 12, 8, 4, 3, 12),
+    mk("p6", "REELS", "Impressão em time-lapse de um vaso de 6 horas", 21, 12900, 880, 64, 230, 140, 39, 15),
+  ];
+  return {
+    demo: true,
+    account: { username: "sua_conta", token_ok: true, rate_per_hour: 180, token_expires_at: new Date(+today + 41 * 864e5).toISOString() },
+    daily: days, media,
+    automations: [
+      { id: "a1", name: "Link da cor nova", active: true, trigger_comment: true, trigger_live: false, trigger_dm: false, keywords: ["cor"], public_replies: ["Te chamei na DM 💬"],
+        welcome_dm: "Oi {username}! Toca no botão que eu te mando o link 👇", quick_reply_label: "Quero o link", require_follow: true,
+        follow_invite: "Pra liberar, é só seguir o perfil e tocar no botão abaixo 👇", follow_button: "Já segui!", delivery_text: "Aqui está o link da cor nova com frete grátis hoje",
+        link_url: "https://sualoja.com/cores", link_title: "Ver cores", utm: { utm_source: "instagram", utm_medium: "dm", utm_campaign: "cor-nova" }, followups: [{ delay_min: 240, text: "O frete grátis acaba à meia-noite!" }], media_ids: ["p4"],
+        stats: { triggered: 612, dm_sent: 598, opted_in: 401, gated: 236, follow_gained: 181, gate_released: 19, delivered: 389, followup_sent: 270 } },
+      { id: "a2", name: "Catálogo por DM", active: false, trigger_comment: false, trigger_live: false, trigger_dm: true, keywords: ["catalogo"], public_replies: [],
+        welcome_dm: "Oi! Quer o catálogo completo?", quick_reply_label: "Quero ver", require_follow: false, delivery_text: "Catálogo completo com preços", link_url: "https://sualoja.com/catalogo", link_title: "Abrir catálogo",
+        followups: [], stats: { triggered: 88, dm_sent: 88, opted_in: 71, delivered: 71 } },
+    ],
+    audience: {
+      age: [{ k: "18-24", v: 820 }, { k: "25-34", v: 2140 }, { k: "35-44", v: 1260 }, { k: "45-54", v: 480 }, { k: "55-64", v: 140 }],
+      gender: [{ k: "M", v: 3310 }, { k: "F", v: 1440 }, { k: "U", v: 90 }],
+      city: [{ k: "São Paulo, São Paulo", v: 1180 }, { k: "Campinas, São Paulo", v: 290 }, { k: "Rio de Janeiro, Rio de Janeiro", v: 260 }, { k: "Belo Horizonte, Minas Gerais", v: 170 }, { k: "Curitiba, Paraná", v: 150 }],
+    },
+    queue: { done: 1420, pending: 3, skipped: 12 }, errors: [],
+    contacts: { total: 1930, gained_follow: 181 },
+  };
+}
+
+// ───── gráficos ─────
+function lineChart(el, points, color = "var(--accent)") {
+  const W = 560, H = 190, P = { l: 40, r: 10, t: 12, b: 26 };
+  if (!points.length) { el.innerHTML = '<p class="muted small">Sem dados ainda.</p>'; return; }
+  const max = Math.max(1, ...points.map((p) => p.v));
+  const nice = Math.pow(10, Math.floor(Math.log10(max))); const top = Math.ceil(max / nice) * nice;
+  const x = (i) => P.l + (points.length === 1 ? (W - P.l - P.r) / 2 : i * (W - P.l - P.r) / (points.length - 1));
+  const y = (v) => H - P.b - (v / top) * (H - P.t - P.b);
+  const path = points.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.v).toFixed(1)).join(" ");
+  const area = path + ` L${x(points.length - 1).toFixed(1)} ${H - P.b} L${x(0).toFixed(1)} ${H - P.b} Z`;
+  const grid = [0, .5, 1].map((f) => `<line x1="${P.l}" x2="${W - P.r}" y1="${y(top * f)}" y2="${y(top * f)}" stroke="var(--line)"/><text x="${P.l - 6}" y="${y(top * f) + 4}" text-anchor="end">${fmt(top * f)}</text>`).join("");
+  const step = Math.max(1, Math.ceil(points.length / 6));
+  const labels = points.map((p, i) => i % step === 0 || i === points.length - 1 ? `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${p.d.slice(8, 10)}/${p.d.slice(5, 7)}</text>` : "").join("");
+  const last = points[points.length - 1];
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico por dia">${grid}
+    <path d="${area}" fill="${color}" opacity=".12"/><path d="${path}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="${x(points.length - 1)}" cy="${y(last.v)}" r="4" fill="${color}"/>${labels}</svg>`;
+}
+function hbars(rows, total) {
+  const max = Math.max(1, ...rows.map((r) => r.v));
+  return `<div class="hbars">${rows.map((r) => `<div class="hbar"><span title="${esc(r.k)}">${esc(r.k)}</span><div class="bar"><i style="width:${(r.v / max * 100).toFixed(1)}%"></i></div><b>${total ? pct(r.v / total) : fmt(r.v)}</b></div>`).join("")}</div>`;
+}
+
+// ───── cálculos ─────
+const sum = (rows, k) => rows.reduce((s, r) => s + (Number(r.m?.[k]) || 0), 0);
+const gainOf = (r) => r.m?.follows_and_unfollows__follower != null ? r.m.follows_and_unfollows__follower - (r.m.follows_and_unfollows__non_follower || 0) : r.m?.new_followers;
+function mediaStats(m) {
+  const i = m.insights || {}, reach = i.reach || 0;
+  const inter = i.total_interactions ?? ((i.likes ?? m.like_count ?? 0) + (i.comments ?? m.comments_count ?? 0) + (i.saved || 0) + (i.shares || 0));
+  return { reach, inter, er: reach ? inter / reach : null, saved: i.saved || 0, shares: i.shares || 0, follows: i.follows || 0, views: i.views || 0 };
+}
+const spHour = (iso) => (new Date(iso).getUTCHours() + 21) % 24;
+const spDow = (iso) => new Date(new Date(iso) - 3 * 3600e3).getUTCDay();
+const DOW = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+
+function growthTips(d) {
+  const tips = [], media = d.media || [];
+  const withReach = media.filter((m) => m.insights?.reach);
+  const byType = {};
+  for (const m of withReach) { const t = m.media_product_type === "REELS" ? "Reels" : "Feed"; (byType[t] ||= []).push(mediaStats(m)); }
+  const avg = (a, k) => a.reduce((s, x) => s + (x[k] || 0), 0) / a.length;
+  if (byType.Reels && byType.Feed) {
+    const r = avg(byType.Reels, "reach"), f = avg(byType.Feed, "reach");
+    const best = r >= f ? "Reels" : "Feed", ratio = Math.max(r, f) / Math.max(1, Math.min(r, f));
+    tips.push(["F", `${best} alcança ${ratio.toFixed(1).replace(".", ",")}× mais`, `Média de ${fmt(Math.max(r, f))} contas por ${best === "Reels" ? "reel" : "post"} contra ${fmt(Math.min(r, f))}. Priorize esse formato para chegar em quem ainda não te segue.`]);
+  }
+  if (withReach.length >= 4) {
+    const slots = {};
+    for (const m of withReach) { const k = spDow(m.posted_at) + "|" + spHour(m.posted_at); const s = mediaStats(m); (slots[k] ||= []).push(s.reach); }
+    const best = Object.entries(slots).map(([k, v]) => [k, v.reduce((a, b) => a + b, 0) / v.length]).sort((a, b) => b[1] - a[1])[0];
+    const [dw, h] = best[0].split("|");
+    tips.push(["H", `Melhor horário: ${DOW[dw]} às ${h}h`, `Seus posts nesse horário tiveram o maior alcance médio (${fmt(best[1])}). Repita o horário nas próximas postagens.`]);
+  }
+  const topSaved = [...withReach].sort((a, b) => mediaStats(b).saved - mediaStats(a).saved)[0];
+  if (topSaved && mediaStats(topSaved).saved > 0) tips.push(["S", "Conteúdo que as pessoas salvam", `"${(topSaved.caption || "Post").slice(0, 60)}" teve ${fmt(mediaStats(topSaved).saved)} salvamentos. Faça mais posts úteis nesse estilo: salvamento sinaliza valor ao algoritmo.`]);
+  const topFollow = [...withReach].sort((a, b) => mediaStats(b).follows - mediaStats(a).follows)[0];
+  if (topFollow && mediaStats(topFollow).follows > 0) tips.push(["+", "Post que mais trouxe seguidores", `"${(topFollow.caption || "Post").slice(0, 60)}" gerou ${fmt(mediaStats(topFollow).follows)} seguidores. Coloque uma automação de comentário nos próximos posts desse tema.`]);
+  const auts = d.automations || [];
+  const gated = auts.filter((a) => a.require_follow && a.stats?.gated);
+  if (gated.length) {
+    const g = gated.reduce((s, a) => s + (a.stats.gated || 0), 0), w = gated.reduce((s, a) => s + (a.stats.follow_gained || 0), 0);
+    tips.push(["A", `Trava de seguir converteu ${pct(w / g)}`, `${fmt(w)} de ${fmt(g)} pessoas que não seguiam passaram a seguir para receber o link. Use a trava nos conteúdos mais desejados.`]);
+  } else if (auts.length) {
+    tips.push(["A", "Ligue a trava de seguir", "Exigir que a pessoa siga antes de receber o link é a forma mais direta de transformar comentários em seguidores."]);
+  } else {
+    tips.push(["A", "Crie sua primeira automação", "Um post com \"Comenta QUERO que eu te mando o link\" e a trava de seguir costuma gerar comentários (alcance) e seguidores ao mesmo tempo."]);
+  }
+  const ages = d.audience?.age;
+  if (ages?.length) { const top = [...ages].sort((a, b) => b.v - a.v)[0]; const tot = ages.reduce((s, x) => s + x.v, 0); tips.push(["P", `Seu público é ${top.k} anos`, `${pct(top.v / tot)} dos seguidores estão nessa faixa. Linguagem, referências e produtos devem conversar com ela.`]); }
+  return tips;
+}
+
+// ───── render ─────
+function render() {
+  const d = data; if (!d) return;
+  $("#mode").hidden = !d.demo; $("#demoBanner").hidden = !d.demo;
+  $("#title").firstChild.textContent = "@" + (d.account?.username || "sua_conta") + " ";
+  const days = Number($("#days").value), rows = (d.daily || []).slice(-days);
+  const lastF = [...(d.daily || [])].reverse().find((r) => r.followers != null)?.followers;
+  const gains = rows.map((r) => ({ d: r.day, v: gainOf(r) })).filter((p) => p.v != null);
+  const gainTotal = gains.reduce((s, p) => s + p.v, 0);
+  const viaAut = d.contacts?.gained_follow ?? 0;
+  const k = [
+    ["Seguidores", fmt(lastF), gains.length ? `<span class="${gainTotal >= 0 ? "up" : "down"}">${gainTotal >= 0 ? "+" : ""}${fmt(gainTotal)}</span> no período` : "aguardando métricas"],
+    ["Alcance", fmt(sum(rows, "reach")), "contas únicas somadas por dia"],
+    ["Contas engajadas", fmt(sum(rows, "accounts_engaged")), fmt(sum(rows, "total_interactions")) + " interações"],
+    ["Seguidores via automação", fmt(viaAut), gainTotal > 0 ? pct(viaAut / gainTotal) + " do crescimento" : "com a trava de seguir"],
+    ["Cliques no link da bio", fmt(sum(rows, "profile_links_taps")), "toques nos links do perfil"],
+  ];
+  $("#kpis").innerHTML = k.map(([l, v, s]) => `<div class="kpi"><span class="lbl">${l}</span><span class="val">${v}</span><span class="sub">${s}</span></div>`).join("");
+  lineChart($("#chFollow"), gains, "var(--good)");
+  $("#followTotal").textContent = gains.length ? (gainTotal >= 0 ? "+" : "") + fmt(gainTotal) + " no período" : "";
+  const reach = rows.map((r) => ({ d: r.day, v: r.m?.reach })).filter((p) => p.v != null);
+  lineChart($("#chReach"), reach);
+  $("#reachTotal").textContent = reach.length ? fmt(sum(rows, "reach")) + " no período" : "";
+  $("#tips").innerHTML = growthTips(d).map(([ic, t, s]) => `<li><span class="ic">${ic}</span><div><b>${esc(t)}</b><span>${esc(s)}</span></div></li>`).join("");
+  renderAutomations(); renderPosts(); renderAudience(); renderConn();
+}
+
+function renderAutomations() {
+  const list = data.automations || [];
+  if (!list.length) { $("#autList").innerHTML = '<div class="panel"><h3>Nenhuma automação ainda</h3><p class="muted small">Crie uma para responder comentários com uma DM e trazer novos seguidores.</p></div>'; return; }
+  $("#autList").innerHTML = list.map((a) => {
+    const s = a.stats || {}, base = Math.max(1, s.triggered || 0);
+    const steps = [["Disparos", s.triggered], ["DM enviada", s.dm_sent], ["Tocou no botão", s.opted_in]];
+    if (a.require_follow) steps.push(["Não seguia", s.gated], ["Passou a seguir", s.follow_gained, "alt"]);
+    steps.push(["Recebeu o link", s.delivered]);
+    const trig = [a.trigger_comment && "comentário", a.trigger_live && "live", a.trigger_dm && "DM"].filter(Boolean).join(" · ");
+    const where = a.trigger_comment ? (a.media_ids?.length ? `${a.media_ids.length} post(s)` : "todos os posts") : "";
+    return `<article class="panel aut" data-id="${esc(a.id)}">
+      <div class="head"><div><h3>${esc(a.name)}</h3><p class="small muted">${trig}${where ? " · " + where : ""}${a.require_follow ? " · exige seguir" : ""}</p></div>
+        <label class="switch" title="Ativar ou pausar"><input type="checkbox" id="sw-${esc(a.id)}" data-toggle ${a.active ? "checked" : ""} aria-label="Ativa"><span></span></label></div>
+      <div class="kw">${(a.keywords?.length ? a.keywords : ["qualquer comentário"]).map((x) => `<span>${esc(x)}</span>`).join("")}</div>
+      <div class="funnel">${steps.map(([l, v, c]) => `<div class="fstep"><span>${l}</span><div class="bar ${c || ""}"><i style="width:${((v || 0) / base * 100).toFixed(1)}%"></i></div><b>${fmt(v || 0)}</b></div>`).join("")}</div>
+      <div class="row"><button data-edit>Editar</button><button data-dup class="ghost">Duplicar</button><span class="confirm" data-delwrap><button data-del class="ghost danger">Excluir</button></span></div>
+    </article>`;
+  }).join("");
+}
+
+function renderPosts() {
+  const sort = $("#sortPosts").value;
+  const list = [...(data.media || [])].map((m) => ({ m, s: mediaStats(m) }));
+  const by = { reach: (x) => x.s.reach, er: (x) => x.s.er || 0, follows: (x) => x.s.follows, saved: (x) => x.s.saved };
+  if (by[sort]) list.sort((a, b) => by[sort](b) - by[sort](a));
+  $("#postList").innerHTML = list.length ? list.map(({ m, s }) => `<a class="post" href="${esc(m.permalink || "#")}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">
+    ${m.thumbnail_url ? `<img src="${esc(m.thumbnail_url)}" alt="" loading="lazy">` : '<div class="ph"></div>'}
+    <div style="min-width:0;display:grid;gap:4px"><div class="cap"><span class="pill">${m.media_product_type === "REELS" ? "Reel" : "Post"}</span> ${esc(m.caption || "Sem legenda")}</div>
+      <div class="stats"><span>Alcance <b>${fmt(s.reach)}</b></span><span class="er">${pct(s.er)} eng.</span><span>Salvos <b>${fmt(s.saved)}</b></span><span>Compart. <b>${fmt(s.shares)}</b></span>${s.follows ? `<span>Seguiram <b>${fmt(s.follows)}</b></span>` : ""}<span>${new Date(m.posted_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span></div></div></a>`).join("")
+    : '<div class="panel muted small">Os posts aparecem depois da primeira atualização de métricas.</div>';
+}
+
+function renderAudience() {
+  const a = data.audience || {}, out = [];
+  const tot = (r) => r.reduce((s, x) => s + x.v, 0);
+  if (a.age?.length) out.push(`<div class="panel"><h2>Idade</h2>${hbars(a.age, tot(a.age))}</div>`);
+  if (a.gender?.length) out.push(`<div class="panel"><h2>Gênero</h2>${hbars(a.gender.map((g) => ({ k: { M: "Homens", F: "Mulheres", U: "Não informado" }[g.k] || g.k, v: g.v })), tot(a.gender))}</div>`);
+  if (a.city?.length) out.push(`<div class="panel"><h2>Cidades</h2>${hbars([...a.city].sort((x, y) => y.v - x.v).slice(0, 8).map((c) => ({ k: c.k.split(",")[0], v: c.v })), tot(a.city))}</div>`);
+  if (a.country?.length) out.push(`<div class="panel"><h2>Países</h2>${hbars([...a.country].sort((x, y) => y.v - x.v).slice(0, 6), tot(a.country))}</div>`);
+  if (a.online_hours) { const pts = Array.from({ length: 24 }, (_, h) => ({ k: h + "h", v: Number(a.online_hours[(h + 3) % 24] ?? a.online_hours[h] ?? 0) })); out.push(`<div class="panel"><h2>Seguidores online por hora</h2>${hbars(pts)}</div>`); }
+  $("#audience").innerHTML = out.join("") || '<div class="panel muted small">A Meta só libera dados de público para contas com 100 seguidores ou mais. Eles aparecem aqui depois da atualização de métricas.</div>';
+}
+
+function renderConn() {
+  $("#fnUrl").value = cfg.url || "https://ypcunysgtzdgqamkygtz.supabase.co/functions/v1/instagram"; $("#panelKey").value = cfg.key;
+  const acc = data.account || {};
+  $("#rate").value = acc.rate_per_hour || 180;
+  if (!data.demo) $("#tokenInfo").textContent = acc.token_ok ? `Conectado como @${acc.username || "?"}. ` + (new Date(acc.token_expires_at) - Date.now() > 3e10 ? "O token não expira." : `Token vence em ${new Date(acc.token_expires_at).toLocaleDateString("pt-BR")} e é renovado sozinho.`) : "Nenhum token salvo ainda.";
+  const q = data.queue || {};
+  const names = { done: "enviadas", pending: "na fila", sending: "enviando", skipped: "fora da janela de 24h", error: "com erro" };
+  $("#queue").innerHTML = "Últimas 24h: " + (Object.keys(q).length ? Object.entries(q).map(([k, v]) => `<b>${fmt(v)}</b> ${names[k] || k}`).join(" · ") : "nenhuma mensagem");
+  $("#errors").innerHTML = data.errors?.length ? `<table><thead><tr><th>Quando</th><th>Tipo</th><th>Erro</th></tr></thead><tbody>${data.errors.map((e) => `<tr><td>${new Date(e.at).toLocaleString("pt-BR")}</td><td>${esc(e.kind)}</td><td>${esc(e.error)}</td></tr>`).join("")}</tbody></table>` : "";
+}
+
+// ───── formulário de automação ─────
+function openForm(a) {
+  editing = a || null;
+  const v = a || { trigger_comment: true, keywords: [], public_replies: [], followups: [], quick_reply_label: "Quero o link", follow_invite: "Pra liberar, é só seguir o perfil e tocar no botão abaixo 👇", follow_button: "Já segui!", link_title: "Acessar", require_follow: true, active: true, utm: {} };
+  const media = data.media || [];
+  const sel = new Set(v.media_ids || []);
+  $("#autForm").innerHTML = `<form id="af">
+    <div class="row between"><h2>${a ? "Editar automação" : "Nova automação"}</h2><button type="button" class="ghost" id="afClose">Fechar</button></div>
+    <label for="f-name">Nome<input type="text" id="f-name" required value="${esc(v.name)}" placeholder="Ex.: Link da promoção"></label>
+    <fieldset><legend>Quando disparar</legend>
+      <div class="row"><label class="check"><input type="checkbox" id="f-tc" ${v.trigger_comment ? "checked" : ""}> Comentário em post ou reel</label>
+      <label class="check"><input type="checkbox" id="f-tl" ${v.trigger_live ? "checked" : ""}> Comentário em live</label>
+      <label class="check"><input type="checkbox" id="f-td" ${v.trigger_dm ? "checked" : ""}> Palavra mandada por DM</label></div>
+      <label for="f-kw">Palavras-chave<span class="hint">Separe por vírgula. Vazio responde qualquer comentário (DM sempre precisa de palavra).</span><input type="text" id="f-kw" value="${esc((v.keywords || []).join(", "))}" placeholder="quero, link, eu quero"></label>
+      ${media.length ? `<div><span class="small" style="font-weight:600">Posts</span> <span class="small muted">Nenhum marcado = todos os posts</span><div class="mediapick">${media.slice(0, 24).map((m) => `<label title="${esc(m.caption || "")}"><input type="checkbox" name="media" id="m-${esc(m.id)}" value="${esc(m.id)}" ${sel.has(m.id) ? "checked" : ""}>${m.thumbnail_url ? `<img src="${esc(m.thumbnail_url)}" alt="">` : "<img alt=''>"}<span class="t">${esc((m.caption || "").slice(0, 18))}</span></label>`).join("")}</div></div>` : ""}
+      <p class="small muted">Live: a automação precisa estar ativa antes de a live começar, e a resposta sai só por DM.</p>
+    </fieldset>
+    <fieldset><legend>Primeira resposta</legend>
+      <label for="f-pub">Resposta pública no comentário<span class="hint">Uma por linha; o sistema sorteia. Use {username} para marcar a pessoa.</span><textarea id="f-pub" placeholder="Te mandei na DM, {username}! 💬">${esc((v.public_replies || []).join("\n"))}</textarea></label>
+      <label for="f-wel">DM de boas-vindas<textarea id="f-wel" required placeholder="Oi {username}! Toca no botão que eu te mando o link 👇">${esc(v.welcome_dm)}</textarea></label>
+      <label for="f-qr">Texto do botão<span class="hint">Até 20 caracteres. O toque abre a janela de 24h exigida pela Meta.</span><input type="text" id="f-qr" maxlength="20" required value="${esc(v.quick_reply_label)}"></label>
+    </fieldset>
+    <fieldset><legend>Trava de seguir</legend>
+      <label class="check"><input type="checkbox" id="f-rf" ${v.require_follow ? "checked" : ""}> Só entregar para quem segue o perfil</label>
+      <label for="f-fi">Convite para seguir<textarea id="f-fi">${esc(v.follow_invite)}</textarea></label>
+      <label for="f-fb">Botão do convite<input type="text" id="f-fb" maxlength="20" value="${esc(v.follow_button)}"></label>
+      <p class="small muted">Depois de 3 tentativas, ou se a consulta falhar, o conteúdo é entregue assim mesmo.</p>
+    </fieldset>
+    <fieldset><legend>Entrega</legend>
+      <label for="f-dt">Mensagem<textarea id="f-dt" required placeholder="Aqui está o link com 10% de desconto">${esc(v.delivery_text)}</textarea></label>
+      <label for="f-lu">Link<input type="url" id="f-lu" value="${esc(v.link_url)}" placeholder="https://"></label>
+      <div class="grid2"><label for="f-lt">Texto do botão do link<input type="text" id="f-lt" maxlength="20" value="${esc(v.link_title)}"></label>
+      <label for="f-utm">Campanha (UTM)<span class="hint">Rastreia vendas no Analytics</span><input type="text" id="f-utm" value="${esc(v.utm?.utm_campaign || "")}" placeholder="promo-novembro"></label></div>
+      <label for="f-fu">Lembretes depois da entrega<span class="hint">Um por linha: minutos | mensagem. Máximo de 1430 minutos (regra das 24h).</span><textarea id="f-fu" placeholder="240 | O desconto acaba hoje à meia-noite!">${esc((v.followups || []).map((f) => f.delay_min + " | " + f.text).join("\n"))}</textarea></label>
+    </fieldset>
+    <label class="check"><input type="checkbox" id="f-act" ${v.active ? "checked" : ""}> Ativar ao salvar</label>
+    <div class="row"><button class="primary" type="submit">Salvar automação</button><button type="button" class="ghost" id="afCancel">Cancelar</button></div>
+  </form>`;
+  $("#autForm").hidden = false; $("#autForm").scrollIntoView({ behavior: "smooth", block: "start" });
+  const close = () => { $("#autForm").hidden = true; editing = null; };
+  $("#afClose").onclick = close; $("#afCancel").onclick = close;
+  $("#af").onsubmit = async (e) => {
+    e.preventDefault();
+    const split = (s, re) => s.split(re).map((x) => x.trim()).filter(Boolean);
+    const camp = $("#f-utm").value.trim();
+    const aut = {
+      ...(editing && !editing._dup ? { id: editing.id } : {}),
+      name: $("#f-name").value.trim(), active: $("#f-act").checked,
+      trigger_comment: $("#f-tc").checked, trigger_live: $("#f-tl").checked, trigger_dm: $("#f-td").checked,
+      keywords: split($("#f-kw").value, ","), media_ids: [...document.querySelectorAll('#af input[name="media"]:checked')].map((x) => x.value),
+      public_replies: split($("#f-pub").value, "\n"), welcome_dm: $("#f-wel").value.trim(), quick_reply_label: $("#f-qr").value.trim(),
+      require_follow: $("#f-rf").checked, follow_invite: $("#f-fi").value.trim(), follow_button: $("#f-fb").value.trim() || "Já segui!",
+      delivery_text: $("#f-dt").value.trim(), link_url: $("#f-lu").value.trim() || null, link_title: $("#f-lt").value.trim() || "Acessar",
+      utm: camp ? { utm_source: "instagram", utm_medium: "dm", utm_campaign: camp } : null,
+      followups: split($("#f-fu").value, "\n").map((l) => { const [m, ...t] = l.split("|"); return { delay_min: parseInt(m, 10), text: t.join("|").trim() }; }).filter((f) => f.delay_min > 0 && f.text),
+    };
+    if (!aut.trigger_comment && !aut.trigger_live && !aut.trigger_dm) return toast("Escolha pelo menos um gatilho.");
+    if (aut.trigger_dm && !aut.keywords.length) return toast("Automação por DM precisa de palavra-chave.");
+    if (data.demo) {
+      const id = aut.id || "d" + Date.now();
+      data.automations = [{ ...(editing || {}), ...aut, id, stats: editing?._dup ? {} : editing?.stats || {} }, ...data.automations.filter((x) => x.id !== id)];
+      toast("Salva nos dados de exemplo"); close(); render(); return;
+    }
+    if (await action({ action: "upsert", automation: aut }, "Automação salva")) { close(); await load(); }
+  };
+}
+
+// ───── eventos ─────
+$("#autList").addEventListener("click", async (e) => {
+  const card = e.target.closest("[data-id]"); if (!card) return;
+  const a = data.automations.find((x) => x.id === card.dataset.id);
+  if (e.target.matches("[data-edit]")) openForm(a);
+  if (e.target.matches("[data-dup]")) openForm({ ...a, name: a.name + " (cópia)", active: false, _dup: true });
+  if (e.target.matches("[data-del]")) {
+    card.querySelector("[data-delwrap]").innerHTML = `Excluir "${esc(a.name)}" e o histórico? <button data-delyes class="danger">Excluir</button><button data-delno class="ghost">Manter</button>`;
+  }
+  if (e.target.matches("[data-delno]")) renderAutomations();
+  if (e.target.matches("[data-delyes]")) {
+    if (data.demo) { data.automations = data.automations.filter((x) => x !== a); render(); return; }
+    if (await action({ action: "delete", id: a.id }, "Automação excluída")) await load();
+  }
+});
+$("#autList").addEventListener("change", async (e) => {
+  if (!e.target.matches("[data-toggle]")) return;
+  const id = e.target.closest("[data-id]").dataset.id, on = e.target.checked;
+  const a = data.automations.find((x) => x.id === id); a.active = on;
+  if (data.demo) return toast(on ? "Ativada" : "Pausada");
+  if (!(await action({ action: "toggle", id, active: on }, on ? "Ativada" : "Pausada"))) { e.target.checked = !on; a.active = !on; }
+});
+$("#newAut").onclick = () => openForm(null);
+$("#sortPosts").onchange = renderPosts;
+$("#days").onchange = () => cfg.url ? load() : render();
+$("#connForm").onsubmit = async (e) => {
+  e.preventDefault();
+  cfg = { url: $("#fnUrl").value.trim().replace(/\/+$/, "").replace(/\/panel$/, ""), key: $("#panelKey").value.trim() };
+  store.set("ig.url", cfg.url); store.set("ig.key", cfg.key);
+  if (await load()) { toast("Painel conectado"); location.hash = "visao"; }
+};
+$("#disconnect").onclick = () => { cfg = { url: "", key: "" }; store.set("ig.url", null); store.set("ig.key", null); data = demo(); render(); };
+$("#tokenForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const r = await action({ action: "set_token", token: $("#igToken").value.trim(), ig_user_id: $("#igUserId").value.trim() });
+  if (r) {
+    toast("Conectado como @" + r.username + (r.webhook && r.webhook !== "ok" ? ". Ative a assinatura de webhooks no app da Meta." : ""));
+    $("#igToken").value = ""; await load();
+  }
+};
+$("#saveRate").onclick = async () => { if (await action({ action: "set_rate", rate: Number($("#rate").value) }, "Limite salvo")) load(); };
+for (const [btn, act, msg] of [["#runWorker", "worker", "Fila processada"], ["#runSync", "sync", "Métricas atualizadas"]]) {
+  $(btn).onclick = async (e) => { e.target.disabled = true; const r = await action({ action: act }, msg); e.target.disabled = false; if (r) load(); };
+}
+
+async function load() {
+  if (!cfg.url || !cfg.key) { data = demo(); render(); return false; }
+  try { data = await api("GET", "?days=" + $("#days").value); render(); return true; }
+  catch (e) { toast("Não consegui conectar: " + e.message); data = demo(); render(); return false; }
+}
+
+function route() {
+  const v = (location.hash || "#visao").slice(1);
+  const ok = ["visao", "automacoes", "posts", "publico", "conexao"].includes(v) ? v : "visao";
+  document.querySelectorAll("main > section").forEach((s) => s.hidden = s.id !== "v-" + ok);
+  document.querySelectorAll("nav a").forEach((a) => { if (a.getAttribute("href") === "#" + ok) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+}
+addEventListener("hashchange", route);
+route();
+data = demo(); render();
+load();
+</script>
+
+</body>
+</html>
